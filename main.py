@@ -18,25 +18,20 @@ def isSubset(V, C):
             return False
     return True
 
-def getLength(Vold):
-    n=0
-    for cm in Vold:
-        if cm!=[]:
-            n+=1
-    return n
-
 def incremental_elements(CSt, SubG):
     number_of_communities = len(CSt)
-    Vold=[[]for _ in range(number_of_communities)]
+    Vold=[]
     RelComLab=set()
     for j in range(number_of_communities):
-        Vold[j]=list(set(list(SubG.nodes))&set(CSt[j]))
-        if(isSubset(Vold[j],CSt[j])):
+        Voldj=list(set(list(SubG.nodes))&set(CSt[j]))
+        if(set(Voldj)==set(list(SubG.nodes))):
             type=2
             RelComLab.add(j)
-        if(len(Vold[j])!=0):
+            return type, RelComLab
+        if(len(Voldj)!=0):
+            Vold.append(Voldj)
             RelComLab.add(j)
-    n=getLength(Vold)
+    n=len(Vold)
     if n==0:
         type=1
     if n==1:
@@ -59,7 +54,6 @@ def calculate_subordinating_stength_subg(v,graph):
         denom+=global_graph[node][v]['weight']
         if node in members:
             numer+=global_graph[node][v]['weight']
-    return 0
     return numer/denom
 
 def calculate_subordinating_stength_community(v,community):
@@ -70,7 +64,7 @@ def calculate_subordinating_stength_community(v,community):
         denom+=global_graph[node][v]['weight']
         if node in community:
             numer+=global_graph[node][v]['weight']
-    return 0
+    return numer/denom
 
 def update_communities_multicont(CS,SubG):
     k=len(CS)
@@ -161,11 +155,12 @@ def get_communities_from_incremental_elements(CSt,delta_G,alpha,theta):
             CSt1.append(list(SubG.nodes))
         
         if type==2:
-            newcommunties=modularity(CSt[RelComLab])
-            CSt[RelComLab]=newcommunties[0]
-            for i in range(1,len(newcommunties)):
-                CSt.append(newcommunties[i])
-                uplabel.add(CSt.index(newcommunties[i]))
+            for rel in RelComLab:
+                newcommunties=modularity(CSt[rel])
+                CSt[RelComLab]=newcommunties[0]
+                for i in range(1,len(newcommunties)):
+                    CSt.append(newcommunties[i])
+                    uplabel.add(CSt.index(newcommunties[i]))
 
         if type==3:
             for rel in RelComLab:
@@ -197,7 +192,7 @@ with open("initialgraph.csv", mode ='r')as file:
 CS=[[0,1,2,3],[4,5,6],[7,8,9],[10,11,12,13,14,15]]
 
 subG=nx.Graph()
-with open("mixed.csv", mode ='r')as file:
+with open("completed_contained.csv", mode ='r')as file:
     csvFile = csv.DictReader(file)
     for line in csvFile:
         subG.add_edge(int(line['source']),int(line['target']),weight=int(line['weight']))
